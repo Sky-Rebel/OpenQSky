@@ -21,3 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "OpenQSky"
 include(":app")
+include(":xposed")
+include(":core")
