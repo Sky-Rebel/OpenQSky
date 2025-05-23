@@ -23,12 +23,13 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
 dependencies {
+    implementation(project(":core"))
     compileOnly(files(rootProject.file("libs/compile_only/xposed-api-82_compileonly.jar")))
     implementation(libs.appcompat)
     implementation(libs.material)

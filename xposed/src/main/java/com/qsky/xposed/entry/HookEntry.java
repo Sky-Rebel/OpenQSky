@@ -1,8 +1,9 @@
-package com.qsky.xposed.xposed;
+package com.qsky.xposed.entry;
 
 import android.util.Log;
 
-import java.io.File;
+import com.qsky.core.util.LogUtil;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,9 +12,11 @@ import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
   
-public class XposedEntry implements IXposedHookLoadPackage, IXposedHookInitPackageResources
+public final class HookEntry implements IXposedHookLoadPackage, IXposedHookInitPackageResources
 {
     public static final String TAG = "Xposed_Entry";
+
+    private static boolean activationStatus = false;
 
     private static final String TARGET_PACKAGE_NAME = "com.tencent.mobileqq";
 
@@ -34,13 +37,29 @@ public class XposedEntry implements IXposedHookLoadPackage, IXposedHookInitPacka
         STRING_RES_HASH_MAP.put("c6n", "拂袖别云阙");
     }
 
+    private HookEntry(){}
+
+    public static boolean getActivationStatus()
+    {
+        return activationStatus;
+    }
+
+    public static void setActivationStatus(boolean activationStatus)
+    {
+        HookEntry.activationStatus = activationStatus;
+    }
+
+    public static void postActivationStatus()
+    {
+        Log.i("Xposed", getActivationStatus() ? "QSky既已激活！" : "QSky尚未激活!");
+    }
+
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable
-    {
+	{
         if (loadPackageParam.packageName.equals(TARGET_PACKAGE_NAME) || !loadPackageParam.isFirstApplication) return;
-        Log.i("Xposed", "Successful to Loaded");
-        File file = new File("/storage/emulated/0/OpenQSky");
-        file.mkdirs();
+        postActivationStatus();
+        LogUtil.i("Xposed", "QSky Loaded Successful");
     }
 
     @Override
@@ -49,7 +68,7 @@ public class XposedEntry implements IXposedHookLoadPackage, IXposedHookInitPacka
         if (!initPackageResourcesParam.packageName.equals(TARGET_PACKAGE_NAME)) return;
         for (Map.Entry<String, String> entry : STRING_RES_HASH_MAP.entrySet())
         {
-            initPackageResourcesParam.res.setReplacement (
+            initPackageResourcesParam.res.setReplacement(
                 TARGET_PACKAGE_NAME,
                 "string",
                 entry.getKey(),
