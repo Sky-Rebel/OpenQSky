@@ -6,7 +6,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class LogUtil
 {
@@ -37,8 +38,8 @@ public class LogUtil
 
 	public static final File logFile = new File(logDir, FILE_NAME);
 
-	@SuppressLint("NewApi")
-	public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+	@SuppressLint({"NewApi", "SimpleDateFormat"})
+	public static final String SIMPLE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
 
 	public static void d(String message)
 	{
@@ -115,14 +116,14 @@ public class LogUtil
 		if (level > logLevel) return;
 		StringBuilder logEntry = new StringBuilder();
 		logEntry.append("[");
-		logEntry.append(DATE_TIME_FORMATTER);
+		logEntry.append(SIMPLE_DATE_FORMAT);
 		logEntry.append("] ");
 		logEntry.append(
-			level == DEBUG ? "DEBUG-> " :
-			level == INFO ? "INFO-> " :
-			level == WARN ? "WARN-> " :
-			level == ERROR ? "ERROR-> " :
-			level == FATAL ? "FATAL-> " : "NULL-> "
+			level == DEBUG ? "DEBUG -> " :
+			level == INFO ? "INFO -> " :
+			level == WARN ? "WARN -> " :
+			level == ERROR ? "ERROR -> " :
+			level == FATAL ? "FATAL -> " : "NULL-> "
 		);
 		logEntry.append(tag != null ? "[" + tag + "]" + (char)32 : "");
 		logEntry.append(message != null ? message : "");
@@ -163,6 +164,6 @@ public class LogUtil
 				bufferedWriter.newLine();
 			}
 		}
-		catch (IOException ioException) { }
+		catch (IOException ioException) {}
 	}
 }

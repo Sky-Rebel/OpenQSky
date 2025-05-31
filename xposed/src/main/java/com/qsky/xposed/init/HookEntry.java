@@ -1,8 +1,8 @@
-package com.qsky.xposed.entry;
-
-import android.util.Log;
+package com.qsky.xposed.init;
 
 import com.qsky.core.util.LogUtil;
+import com.qsky.xposed.HookEnv;
+import com.qsky.xposed.action.BaseApplicationImplHook;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,16 +11,14 @@ import de.robv.android.xposed.IXposedHookInitPackageResources;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
-  
+
 public final class HookEntry implements IXposedHookLoadPackage, IXposedHookInitPackageResources
 {
-    public static final String TAG = "Xposed_Entry";
-
-    private static boolean activationStatus = false;
+    private static final String TAG = "Hook_Entry";
 
     private static final String TARGET_PACKAGE_NAME = "com.tencent.mobileqq";
 
-    public static final HashMap<String, String> STRING_RES_HASH_MAP = new HashMap<String, String>();
+    private static final HashMap<String, String> STRING_RES_HASH_MAP = new HashMap<String, String>();
 
     static
     {
@@ -37,29 +35,28 @@ public final class HookEntry implements IXposedHookLoadPackage, IXposedHookInitP
         STRING_RES_HASH_MAP.put("c6n", "拂袖别云阙");
     }
 
-    private HookEntry(){}
-
-    public static boolean getActivationStatus()
+    private static boolean isTargetApplication(String targetPackageName, boolean targetIsFirstApplication)
     {
-        return activationStatus;
+		return targetPackageName.equals(TARGET_PACKAGE_NAME) && targetIsFirstApplication;
     }
 
-    public static void setActivationStatus(boolean activationStatus)
+    private static void postLoadedSuccessful()
     {
-        HookEntry.activationStatus = activationStatus;
+        LogUtil.i("Xposed", "Module Loaded Successful");
     }
 
-    public static void postActivationStatus()
+    private static void setTargetClassLoader(ClassLoader classLoader)
     {
-        Log.i("Xposed", getActivationStatus() ? "QSky既已激活！" : "QSky尚未激活!");
+        HookEnv.targetClassLoader = classLoader;
     }
 
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable
 	{
-        if (loadPackageParam.packageName.equals(TARGET_PACKAGE_NAME) || !loadPackageParam.isFirstApplication) return;
-        postActivationStatus();
-        LogUtil.i("Xposed", "QSky Loaded Successful");
+        if (!HookEntry.isTargetApplication(loadPackageParam.packageName, loadPackageParam.isFirstApplication)) return;
+        HookEntry.postLoadedSuccessful();
+        HookEntry.setTargetClassLoader(loadPackageParam.classLoader);
+        BaseApplicationImplHook.hook();
     }
 
     @Override
@@ -68,12 +65,7 @@ public final class HookEntry implements IXposedHookLoadPackage, IXposedHookInitP
         if (!initPackageResourcesParam.packageName.equals(TARGET_PACKAGE_NAME)) return;
         for (Map.Entry<String, String> entry : STRING_RES_HASH_MAP.entrySet())
         {
-            initPackageResourcesParam.res.setReplacement(
-                TARGET_PACKAGE_NAME,
-                "string",
-                entry.getKey(),
-                entry.getValue()
-            );
+            initPackageResourcesParam.res.setReplacement(TARGET_PACKAGE_NAME, "string", entry.getKey(), entry.getValue());
         }
     }
 }
